@@ -23,3 +23,12 @@ builtins:
 - deferred: on
 - appstats: off
 - admin_redirect: on
+
+skip_files:
+- ^(.*/)?#.*#
+- ^(.*/)?.*~
+- ^(.*/)?.*\.py[co]
+- ^(.*/)?.*/RCS/.*
+- ^(.*/)?\..*
+- ^(.*/)?.*\.fubar
+- ^(.*/)?.*/ClientSide/.*
