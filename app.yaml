@@ -1,0 +1,25 @@
+application: dump1090-helper
+version: 1
+runtime: python27
+api_version: 1
+threadsafe: yes
+
+handlers:
+- url: /favicon\.ico
+  static_files: favicon.ico
+  upload: favicon\.ico
+
+- url: /dump1090
+  static_dir: dump1090
+
+- url: .*
+  script: main.app
+
+libraries:
+- name: webapp2
+  version: latest
+
+builtins:
+- deferred: on
+- appstats: off
+- admin_redirect: on

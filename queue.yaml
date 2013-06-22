@@ -1,0 +1,10 @@
+# Set the total storage limit for all queues to 120MB
+total_storage_limit: 120M
+queue:
+- name: default
+  rate: 5/s
+
+- name: planeCruncher
+  rate: 1/s
+  bucket_size: 30
+  max_concurrent_requests: 5
