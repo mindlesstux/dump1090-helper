@@ -8,13 +8,15 @@ import sys
 
 log.startLogging(sys.stdout)
 
+
 def push(funcdata):
-	log.msg("Msgs: %s" % len(funcdata))
-		
-	data = urllib.urlencode(dict(messages=json.dumps(funcdata)))
-	request = urllib2.Request("http://dump1090-helper.appspot.com/postmessages", data)
-	request.add_header('User-agent', 'dumpHelper/0.1 (%s)' % ('UserKeyHere') )
-	response = urllib2.urlopen(request)
+    log.msg("Msgs: %s" % len(funcdata))
+
+    data = urllib.urlencode(dict(messages=json.dumps(funcdata)))
+    request = urllib2.Request("http://localhost:8080/postmessages", data)
+    request.add_header('User-agent', 'dumpHelper/0.1 (%s)' % ('UserKeyHere') )
+    response = urllib2.urlopen(request)
+
 
 class Echo(Protocol):
     def __init__(self):
@@ -22,14 +24,13 @@ class Echo(Protocol):
         self.last_push = time.time()
 
     def dataReceived(self, data):
-        self.messages.append([str(time.time()), data.rstrip('\n')])
-        #stdout.write("Msg: %s -- Data: %s" % (self.messages, data))
-	if time.time() > self.last_push + 5:
-		push(self.messages)
-		self.messages = []
-		self.last_push = time.time()
+        self.messages.append(data.rstrip('\n'))
+        if time.time() > self.last_push + 1:
+            push(self.messages)
+            self.messages = []
+            self.last_push = time.time()
 
-		
+
 class EchoClientFactory(ReconnectingClientFactory):
     def startedConnecting(self, connector):
         log.msg('Started to connect.')
@@ -48,5 +49,6 @@ class EchoClientFactory(ReconnectingClientFactory):
         log.msg('Connection failed. Reason:', reason)
         ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)
 
-reactor.connectTCP("127.0.0.1", 30002, EchoClientFactory())
+
+reactor.connectTCP("192.168.1.5", 30003, EchoClientFactory())
 reactor.run()

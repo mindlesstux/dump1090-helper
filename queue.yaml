@@ -5,6 +5,13 @@ queue:
   rate: 5/s
 
 - name: planeCruncher
-  rate: 1/s
-  bucket_size: 30
-  max_concurrent_requests: 5
+  rate: 10/s
+  bucket_size: 60
+  max_concurrent_requests: 10
+
+- name: planeBasestation
+  rate: 10/s
+  bucket_size: 60
+  max_concurrent_requests: 10
+
+
