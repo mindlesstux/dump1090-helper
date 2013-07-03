@@ -18,20 +18,30 @@ import datetime, json, logging, webapp2
 
 from base import *
 
+from google.appengine.api import taskqueue
+
+PlaneClass = Planes()
+
 class MainHandler(BasicHandler):
     def get(self):
         self.response.write('Hello world!')
 
-
 class MsgPushHandler(webapp2.RequestHandler):
     def post(self):
+        taskqueue.add(url='/tasks/process', params={'messages': self.request.get('messages')}, queue_name='planeCruncher')
 
+class TaskPlaneCruncher(webapp2.RequestHandler):
+    def post(self):
         msgs = json.loads(self.request.get('messages'))
-        logging.debug(msgs)
-        logging.debug("Messages: %s" % len(msgs))
-        del msgs
+        PlaneClass.processBasestation(msgs)
+
+class WarmupHandler(webapp2.RequestHandler):
+    def get(self):
+        PlaneClass.Warmup()
 
 app = webapp2.WSGIApplication([
+                                  ("/_ah/warmup", WarmupHandler),
                                   ('/', MainHandler),
                                   ('/postmessages', MsgPushHandler),
+                                  ('/tasks/process', TaskPlaneCruncher),
                               ], debug=True)
