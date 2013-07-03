@@ -10,7 +10,8 @@ log.startLogging(sys.stdout)
 
 
 def push(funcdata):
-    log.msg("Msgs: %s" % len(funcdata))
+    #log.msg("Msgs: %s" % funcdata)
+    #log.msg("%s" % json.dumps(funcdata))
 
     data = urllib.urlencode(dict(messages=json.dumps(funcdata)))
     request = urllib2.Request("http://localhost:8080/postmessages", data)
@@ -24,7 +25,9 @@ class Echo(Protocol):
         self.last_push = time.time()
 
     def dataReceived(self, data):
-        self.messages.append(data.rstrip('\n'))
+        msg = str(data).splitlines()
+        for m in msg:
+            self.messages.append(m)
         if time.time() > self.last_push + 1:
             push(self.messages)
             self.messages = []
