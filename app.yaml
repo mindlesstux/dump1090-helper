@@ -27,6 +27,9 @@ builtins:
 - appstats: off
 - admin_redirect: on
 
+inbound_services:
+- warmup
+
 skip_files:
 - ^(.*/)?#.*#
 - ^(.*/)?.*~
