@@ -90,6 +90,7 @@ class Planes():
     def __init__(self):
         # Our planes
         self.planes = {}
+        self.planeicaos = []
 
     def Warmup(self):
         data = memcache.get(planeicaos)
@@ -118,6 +119,7 @@ class Planes():
     # Update our local array of planes and update memcache for other instances
     def pushPlane(self, icao, plane):
         self.planes[icao] = plane
+        self.planeicaos.append(str(icao))
         memcache.set(key=icao, value=plane, time=900)
 
     # Grab this plane somehow...
@@ -157,4 +159,4 @@ class Planes():
     def processBasestation(self, msgs):
         for msg in msgs:
             tmp = msg.split(',')
-            logging.info(tmp)
+            # logging.info(tmp)
