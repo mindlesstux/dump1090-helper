@@ -25,30 +25,49 @@ PlaneClass = Planes()
 # Need to do something nice here so people know what this is, or just make it blank
 class MainHandler(BasicHandler):
     def get(self):
+        self.redirect('/dump1090/gmap.html')
         self.response.write('// Hello world!')
 
 # Test to do XSS so we can provide JSON to our viewers/clients from an alt domain
 class TestSHandler(BasicHandler):
     def get(self):
-	self.response.headers.add_header("Access-Control-Allow-Origin", "*")
+        self.response.headers.add_header("Access-Control-Allow-Origin", "*")
+        self.response.headers['Content-Type'] = 'application/javascript'
         self.response.write('// Hello world!')
 
 class TestJHandler(BasicHandler):
     def get(self):
-	self.response.headers.add_header("Access-Control-Allow-Origin", "*")
+        self.response.headers.add_header("Access-Control-Allow-Origin", "*")
+        self.response.headers['Content-Type'] = 'application/json'
         self.response.write('{}')
+
+class JSONDataHandler(BasicHandler):
+    def get(self):
+        self.response.headers.add_header("Access-Control-Allow-Origin", "*")
+        self.response.headers['Content-Type'] = 'application/json'
+        out = PlaneClass.generateJSON()
+        self.response.write(out)
 
 # Idea to pull the SBS-1 data feed in via 5 second chunks from a client script
 # This part is just for fun, and should not be pushed as primary reason
 # Though if this app goes paid then there are sockets we can make use of to directly read the data
 class MsgPushHandler(webapp2.RequestHandler):
     def post(self):
-        taskqueue.add(url='/tasks/process', params={'messages': self.request.get('messages')}, queue_name='planeCruncher')
+        taskqueue.add(url='/secure/tasks/processjson', params={'messages': self.request.get('messages')}, queue_name='planeCruncher')
 
-class TaskPlaneCruncher(webapp2.RequestHandler):
+class TaskPlaneJSON(webapp2.RequestHandler):
     def post(self):
-        msgs = json.loads(self.request.get('messages'))
-        PlaneClass.processBasestation(msgs)
+        x = str(self.request.get('messages'))
+        try:
+            msgs = json.JSONDecoder().decode(json.loads(x))
+            PlaneClass.processJSON(msgs)
+        except:
+            logging.error("Problem decoding/processing JSON")
+
+
+class CronPlaneReaper(webapp2.RequestHandler):
+    def get(self):
+        PlaneClass.reaper()
 
 # Warms up the python instance, aka pulls the plane lists and sets all the instance variables to everyone is in sync
 class WarmupHandler(webapp2.RequestHandler):
@@ -60,6 +79,8 @@ app = webapp2.WSGIApplication([
                                   ('/', MainHandler),
                                   ('/script.js', TestSHandler),
                                   ('/rnav.json', TestJHandler),
-                                  ('/postmessages', MsgPushHandler),
-                                  ('/tasks/process', TaskPlaneCruncher),
+                                  ('/json/serverpush', MsgPushHandler),
+                                  ('/json/data.json', JSONDataHandler),
+                                  ('/secure/cron/reaper', CronPlaneReaper),
+                                  ('/secure/tasks/processjson', TaskPlaneJSON),
                               ], debug=True)

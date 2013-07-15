@@ -5,12 +5,14 @@ queue:
   rate: 5/s
 
 - name: planeCruncher
-  rate: 10/s
+  rate: 30/s
   bucket_size: 60
   max_concurrent_requests: 10
+  retry_parameters:
+    task_age_limit: 10s
 
 - name: planeBasestation
-  rate: 10/s
+  rate: 30/s
   bucket_size: 60
   max_concurrent_requests: 10
 

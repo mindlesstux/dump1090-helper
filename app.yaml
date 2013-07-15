@@ -12,6 +12,10 @@ handlers:
 - url: /dump1090
   static_dir: dump1090
 
+- url: /secure/.*
+  script: main.app
+  login: admin
+
 - url: .*
   script: main.app
 

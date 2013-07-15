@@ -1,11 +1,27 @@
 import datetime
+import json
 import re
 import os
 import logging
 import webapp2
 
 from google.appengine.api import memcache
+from google.appengine.ext import ndb
 from webapp2_extras import jinja2
+
+# RNAV WPTs
+class WPT_RNAV(ndb.Model):
+    name = ndb.StringProperty()
+    location = ndb.GeoPtProperty()
+    state = ndb.StringProperty()
+    country = ndb.StringProperty()
+
+# Multiple RNAV WPTs make a route
+# Schema prefered, 1-1 all till common then common-out
+class WPT_RNAV_ROUTE(ndb.Model):
+    airport = ndb.StringProperty()
+    name = ndb.StringProperty()
+    sequence = ndb.PickleProperty()
 
 # Handles a bit more than standard webapp2 server
 class BasicHandler(webapp2.RequestHandler):
@@ -53,13 +69,13 @@ class Plane():
         self.flightid = False
 
         # Altitude, GroundSpeed, and Track, ints
-        self.altitude = 0
-        self.groundspeed = 0
-        self.track = 0
+        self.altitude = None
+        self.groundspeed = None
+        self.track = None
 
         # Where are they? floats
-        self.latitude = 0
-        self.longitude = 0
+        self.latitude = None
+        self.longitude = None
 
         # Vertical Rate, altitude changes? int
         self.virticalrate = 0
@@ -82,6 +98,10 @@ class Plane():
         # Last time we updated any data
         self.lastupdate = datetime.datetime.utcnow()
 
+        # This is the number of msgs, JSON count is number of msgs by json...
+        self.msgcount = 0
+        self.msgcountJSON = 0
+
         # Is this plane in the KML/JSON?
         self.showKML = True
 
@@ -93,13 +113,14 @@ class Planes():
         self.planeicaos = []
 
     def Warmup(self):
-        data = memcache.get(planeicaos)
+        data = memcache.get('planeicaos')
         if data is not None:
             for icao in data:
                 self.planes[icao] = self.pullPlane(icao)
 
     def newPlane(self, icao):
         plane = Plane()
+        plane.icao = icao
         self.pushPlane(icao, plane)
         return plane
 
@@ -116,11 +137,34 @@ class Planes():
         else:
             return False
 
+    def reaper(self):
+        logging.debug("Planes before reap: %s" % len(self.planeicaos))
+        to_pop = []
+        for x in self.planes:
+            plane = self.planes[x]
+            now = datetime.datetime.now()
+            planedate = plane.lastupdate
+            timedelta = now - planedate
+            if timedelta.total_seconds() > 300:
+                to_pop.append(x)
+
+        for x in to_pop:
+            logging.debug("Removing '%s' from list" % x)
+            self.planes.pop(x)
+            self.planeicaos.remove(x)
+            memcache.delete(key=plane.icao)
+            memcache.set(key='planeicaos', value=self.planeicaos, time=1800)
+
+        logging.debug("Planes after reap:  %s" % len(self.planeicaos))
+
     # Update our local array of planes and update memcache for other instances
     def pushPlane(self, icao, plane):
+        plane.lastupdate = datetime.datetime.utcnow()
         self.planes[icao] = plane
-        self.planeicaos.append(str(icao))
         memcache.set(key=icao, value=plane, time=900)
+        if icao not in self.planeicaos:
+            self.planeicaos.append(str(icao))
+            memcache.set(key='planeicaos', value=self.planeicaos, time=1800)
 
     # Grab this plane somehow...
     def pullPlane(self, icao):
@@ -156,7 +200,84 @@ class Planes():
             plane = self.newPlane(icao)
             return plane
 
-    def processBasestation(self, msgs):
+    def processJSON(self, msgs):
         for msg in msgs:
-            tmp = msg.split(',')
-            # logging.info(tmp)
+            plane = self.pullPlane(msg['hex'])
+
+            if plane.msgcountJSON is not msg['messages']:
+                if bool(msg['validaltitude']) is True:
+                    plane.altitude = msg['altitude']
+
+                if bool(msg['validtrack']) is True:
+                    plane.track = int(msg['track'])
+                else:
+                    plane.track = None
+
+                if bool(msg['validposition']) is True:
+                    plane.latitude = msg['lat']
+                    plane.longitude = msg['lon']
+                else:
+                    plane.latitude = None
+                    plane.longitude = None
+
+                if plane.squawk is not msg['squawk']:
+                    plane.squawk = msg['squawk']
+
+                if plane.flightid is not msg['flight']:
+                    plane.flightid = msg['flight']
+
+                if int(msg['speed']) is not 0:
+                    plane.groundspeed = int(msg['speed'])
+
+                plane.msgcountJSON = msg['messages']
+                plane.msgcount += 1
+
+                self.pushPlane(msg['hex'], plane)
+
+            del plane
+
+    def generateJSON(self):
+        jsonstr = []
+        for plane in self.planes:
+            planestr = {}
+            planestr['hex'] = self.planes[plane].icao
+            planestr['squawk'] = self.planes[plane].squawk
+            planestr['flight'] = self.planes[plane].flightid
+
+            if self.planes[plane].latitude is not None and self.planes[plane].longitude is not None:
+                planestr['validposition'] = 1
+            else:
+                planestr['validposition'] = 0
+            planestr['lat'] = self.planes[plane].latitude
+            planestr['lon'] = self.planes[plane].longitude
+
+            if self.planes[plane].altitude is not None:
+                planestr['validaltitude'] = 1
+                planestr['altitude'] = self.planes[plane].altitude
+            else:
+                planestr['validaltitude'] = 0
+                planestr['altitude'] = ""
+
+            if self.planes[plane].groundspeed is not None:
+                planestr['speed'] = self.planes[plane].groundspeed
+            else:
+                planestr['speed'] = ""
+
+            if self.planes[plane].track is not None:
+                planestr['validtrack'] = 1
+                planestr['track'] = self.planes[plane].track
+            else:
+                planestr['validtrack'] = 0
+                planestr['track'] = ""
+
+            now = datetime.datetime.now()
+            planedate = self.planes[plane].lastupdate
+            timedelta = now - planedate
+            planestr['seen'] = "%s" % int(timedelta.total_seconds())
+
+            planestr['messages'] = self.planes[plane].msgcount
+
+            jsonstr.append(planestr)
+        jsondump = json.dumps(jsonstr)
+        #logging.info(jsondump)
+        return jsondump
