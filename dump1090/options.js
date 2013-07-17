@@ -21,8 +21,39 @@ function optionsInitalize() {
 	});
 
 	$( "#tabs" ).tabs();
+	
+	// Antenna coverage
+	$("#antennaShow").buttonset();
+	$("#antennaCollect").buttonset();
+	$("#downloadBaseCoverage").button();
+	$("#antennaShowOpacity").slider({
+	     min: 0,
+	     max: 100,
+	     value: (AntennaDataOpacity*100),
+	     slide: function(event, ui) {
+	        AntennaDataOpacity = ui.value / 100;
+	        drawAntennaData();
+	     }
+	});
+	
+	if(AntennaDataShow) {
+	    $('#antennaShowOn').prop('checked',true).button("refresh");
+	} else {
+	    $('#antennaShowOff').prop('checked',true).button("refresh");
+	}
+	
+	if(antennaCollect) {
+	    $('#antennaCollectOn').prop('checked',true).button("refresh");
+	} else {
+	    $('#antennaCollectOff').prop('checked',true).button("refresh");
+	}
 }
 
 function optionsModal() {
 	$( "#dialog-modal" ).dialog( "open");
+}
+
+function downloadBaseCoverage() {
+    var blob = new Blob([JSON.stringify(AntennaData)], {type: "text/plain;charset=utf-8"});
+    saveAs(blob, "antennaBaseCoverage.txt");
 }

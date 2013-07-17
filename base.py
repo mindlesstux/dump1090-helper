@@ -105,6 +105,8 @@ class Plane():
         # Is this plane in the KML/JSON?
         self.showKML = True
 
+        self.trail = []
+
 # Lets group the planes together
 class Planes():
     def __init__(self):
@@ -204,6 +206,7 @@ class Planes():
         for msg in msgs:
             plane = self.pullPlane(msg['hex'])
 
+            # Need to change this to last updated w/ GMT/UTC conversion
             if plane.msgcountJSON is not msg['messages']:
                 if bool(msg['validaltitude']) is True:
                     plane.altitude = msg['altitude']
@@ -238,44 +241,47 @@ class Planes():
 
     def generateJSON(self):
         jsonstr = []
-        for plane in self.planes:
+        for x in self.planes:
+            plane = self.pullPlane(x)
             planestr = {}
-            planestr['hex'] = self.planes[plane].icao
-            planestr['squawk'] = self.planes[plane].squawk
-            planestr['flight'] = self.planes[plane].flightid
+            planestr['hex'] = plane.icao
+            planestr['squawk'] = plane.squawk
+            planestr['flight'] = plane.flightid
 
-            if self.planes[plane].latitude is not None and self.planes[plane].longitude is not None:
+            if plane.latitude is not None and plane.longitude is not None:
                 planestr['validposition'] = 1
+                planestr['lat'] = plane.latitude
+                planestr['lon'] = plane.longitude
             else:
                 planestr['validposition'] = 0
-            planestr['lat'] = self.planes[plane].latitude
-            planestr['lon'] = self.planes[plane].longitude
+                planestr['lat'] = ""
+                planestr['lon'] = ""
 
-            if self.planes[plane].altitude is not None:
+            if plane.altitude is not None:
                 planestr['validaltitude'] = 1
-                planestr['altitude'] = self.planes[plane].altitude
+                planestr['altitude'] = plane.altitude
             else:
                 planestr['validaltitude'] = 0
                 planestr['altitude'] = ""
 
-            if self.planes[plane].groundspeed is not None:
-                planestr['speed'] = self.planes[plane].groundspeed
+            if plane.groundspeed is not None:
+                planestr['speed'] = plane.groundspeed
             else:
                 planestr['speed'] = ""
 
-            if self.planes[plane].track is not None:
+            if plane.track is not None:
                 planestr['validtrack'] = 1
-                planestr['track'] = self.planes[plane].track
+                planestr['track'] = plane.track
             else:
                 planestr['validtrack'] = 0
                 planestr['track'] = ""
 
             now = datetime.datetime.now()
-            planedate = self.planes[plane].lastupdate
+            planedate = plane.lastupdate
             timedelta = now - planedate
             planestr['seen'] = "%s" % int(timedelta.total_seconds())
 
-            planestr['messages'] = self.planes[plane].msgcount
+            planestr['messages'] = plane.msgcount
 
             jsonstr.append(planestr)
         jsondump = json.dumps(jsonstr)

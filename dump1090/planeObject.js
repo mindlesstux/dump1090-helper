@@ -14,6 +14,7 @@ var planeObject = {
 	flight		: null,
 	squawk		: null,
 	icao		: null,
+	reg         : null,
 	is_selected	: false,	
 
 	// Data packet numbers
@@ -135,17 +136,22 @@ var planeObject = {
 			// Update all of our data
 			this.updated	= new Date().getTime();
 			this.altitude	= data.altitude;
-			this.speed	= data.speed;
-			this.track	= data.track;
+			this.speed	    = data.speed;
+			this.track	    = data.track;
 			this.latitude	= data.lat;
 			this.longitude	= data.lon;
-			this.flight	= data.flight;
-			this.squawk	= data.squawk;
-			this.icao	= data.hex;
+			this.flight	    = data.flight;
+			this.squawk	    = data.squawk;
+			this.icao	    = data.hex;
 			this.messages	= data.messages;
-			this.seen	= data.seen;
-			this.vTrack = (parseInt(data.validtrack) ? true : false);
-			this.vPosition = (parseInt(data.validposition) ? true : false);
+			this.seen	    = data.seen;
+			this.signal     = data.signal;
+			this.vTrack     = (parseInt(data.validtrack) ? true : false);
+			this.vPosition  = (parseInt(data.validposition) ? true : false);
+			this.vAltitude  = (parseInt(data.validaltitude) ? true : false);
+			if (data.reg && data.reg != '') {
+			    this.reg    = data.reg;
+			}
 
 			// If no packet in over 58 seconds, consider the plane reapable
 			// This way we can hold it, but not show it just in case the plane comes back
@@ -234,7 +240,7 @@ var planeObject = {
 					position: new google.maps.LatLng(this.latitude, this.longitude),
 					map: GoogleMap,
 					icon: this.funcGetIcon(),
-					visable: true,
+					visible: true,
 				});
 
 				// This is so we can match icao address
@@ -268,6 +274,7 @@ var planeObject = {
 					strokeWeight: 3,
 					map: GoogleMap,
 					path: this.trackline,
+					zIndex: 10
 				});
 			}
 			return this.line;
