@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+	<name>Dump1090-Helper</name>
+	<Folder>
+		<name>Dump1090-Helper</name>
+		<open>1</open>
+		<NetworkLink>
+			<name>Planes DUMPHELPER</name>
+			<open>1</open>
+			<Link>
+				<href>http://adsb.mindlesstux.com/kml/planes.kml</href>
+				<refreshMode>onInterval</refreshMode>
+				<refreshInterval>1</refreshInterval>
+			</Link>
+		</NetworkLink>
+	</Folder>
+</Document>
+</kml>

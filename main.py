@@ -48,6 +48,20 @@ class JSONDataHandler(BasicHandler):
         out = PlaneClass.generateJSON()
         self.response.write(out)
 
+class JSONTrailDataHandler(BasicHandler):
+    def get(self):
+        self.response.headers.add_header("Access-Control-Allow-Origin", "*")
+        self.response.headers['Content-Type'] = 'application/json'
+        out = PlaneClass.generateJSONTrail(self.request.get('icao'))
+        self.response.write(out)
+
+class KMLHandler(BasicHandler):
+    def get(self):
+        self.response.headers.add_header("Access-Control-Allow-Origin", "*")
+        self.response.headers['Content-Type'] = 'application/vnd.google-earth.kml+xml'
+        out = PlaneClass.generateKML()
+        self.response.write(out)
+
 # Idea to pull the SBS-1 data feed in via 5 second chunks from a client script
 # This part is just for fun, and should not be pushed as primary reason
 # Though if this app goes paid then there are sockets we can make use of to directly read the data
@@ -79,8 +93,10 @@ app = webapp2.WSGIApplication([
                                   ('/', MainHandler),
                                   ('/script.js', TestSHandler),
                                   ('/rnav.json', TestJHandler),
+                                  ('/kml/planes.kml', KMLHandler),
                                   ('/json/serverpush', MsgPushHandler),
                                   ('/json/data.json', JSONDataHandler),
+                                  ('/json/trail.json', JSONTrailDataHandler),
                                   ('/secure/cron/reaper', CronPlaneReaper),
                                   ('/secure/tasks/processjson', TaskPlaneJSON),
                               ], debug=True)

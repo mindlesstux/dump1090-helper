@@ -27,11 +27,11 @@ function fetchData() {
 		SpecialSquawk = false;
 		
 		// Loop through all the planes in the data packet
-		for (var j=0; j < data.length; j++) {
+		for (var j=0; j < data[1].length; j++) {
 			// Do we already have this plane object in Planes?
 			// If not make it.
-			if (Planes[data[j].hex]) {
-				var plane = Planes[data[j].hex];
+			if (Planes[data[1][j].hex]) {
+				var plane = Planes[data[1][j].hex];
 			} else {
 				var plane = jQuery.extend(true, {}, planeObject);
 			}
@@ -42,18 +42,18 @@ function fetchData() {
             } //*/
             
             // Set SpecialSquawk-value
-            if (data[j].squawk == '7500' || data[j].squawk == '7600' || data[j].squawk == '7700') {
+            if (data[1][j].squawk == '7500' || data[1][j].squawk == '7600' || data[1][j].squawk == '7700') {
                 SpecialSquawk = true;
             }
 
 			// Call the function update
-			plane.funcUpdateData(data[j]);
+			plane.funcUpdateData(data[1][j]);
 			
 			// Copy the plane into Planes
 			Planes[plane.icao] = plane;
 		}
 
-		PlanesOnTable = data.length;
+		PlanesOnTable = data[1].length;
 	});
 }
 
