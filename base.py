@@ -171,13 +171,17 @@ class Planes():
             planedate = plane.lastupdate
             timedelta = now - planedate
             if timedelta.total_seconds() > 300:
-                tmp_trl = PLN_TRAIL(plane=plane.icao, trail=plane.trail)
-                tmp_trl.put()
-                plane.seen_stop = datetime.datetime.utcnow()
-                tmp_pln = PLN_LOG(icao=plane.icao, flightid=plane.flightid, seen_start=plane.seen_start, seen_stop=plane.seen_stop, trail=tmp_trl.key)
-                tmp_pln.put()
+            	plane.seen_stop = datetime.datetime.utcnow()
+            	if len(plane.trail) > 0:
+                    tmp_trl = PLN_TRAIL(plane=plane.icao, trail=plane.trail)
+                    tmp_trl.put()
+                    tmp_pln = PLN_LOG(icao=plane.icao, flightid=plane.flightid, seen_start=plane.seen_start, seen_stop=plane.seen_stop, trail=tmp_trl.key)
+                    tmp_pln.put()
+                    del tmp_trl
+                else:
+                    tmp_pln = PLN_LOG(icao=plane.icao, flightid=plane.flightid, seen_start=plane.seen_start, seen_stop=plane.seen_stop)
+                    tmp_pln.put()
 
-                del tmp_trl
                 del tmp_pln
 
                 to_pop.append(x)
