@@ -11,7 +11,7 @@
 			<Link>
 				<href>http://adsb.mindlesstux.com/kml/planes.kml</href>
 				<refreshMode>onInterval</refreshMode>
-				<refreshInterval>1</refreshInterval>
+				<refreshInterval>5</refreshInterval>
 			</Link>
 		</NetworkLink>
 	</Folder>
