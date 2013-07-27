@@ -43,3 +43,7 @@ AntennaDataCollect  = true;
 AntennaDataShow     = true;
 AntennaDataOpacity  = 0.3;
 
+// -- ATC audio stream ------------------------------------
+AudioStreamShow     = true;
+AudioStreamPageURL  = "http://www.liveatc.net/search/?icao=" + MetarIcaoCode
+AudioStreamURL      = "http://www.liveatc.net/play/kclt_twr.pls"

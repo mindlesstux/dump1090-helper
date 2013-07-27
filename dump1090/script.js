@@ -100,7 +100,7 @@ function initialize() {
 			"stylers": [
 				{ "visibility": "on" },
 				{ "weight": 8 },
-				{ "color": "#000000" }
+				{ "color": "#0F0F0F" }
 			]
 		},{
 			"featureType": "water",
@@ -223,7 +223,7 @@ function initialize() {
 	}
 	
 	// Ui buttons setup
-	btnWidth = "100px";
+	btnWidth = "140";
 	$("#resetMap").button({icons: {primary: "ui-icon-arrowrefresh-1-w"}});
 	$("#resetMap").width(btnWidth);
 	$("#resetMap").css("margin-bottom", "3px");
@@ -233,10 +233,31 @@ function initialize() {
 	
 	$("#optionsModal").button({icons: {primary: "ui-icon-gear"}});
 	$("#optionsModal").width(btnWidth);
+    $("#optionsModal").css("margin-bottom", "3px");
     $("#optionsModal").button().focus(function() {
       $(this).button("widget").removeClass("ui-state-focus");
     });
-	
+
+    $("#audioPage").button({icons: {primary: "ui-icon-link"}});
+    $("#audioPage").width(100)
+    $("#audioPage").button().focus(function() {
+      $(this).button("widget").removeClass("ui-state-focus");
+    });
+
+    $("#audioURL").button({icons: {primary: "ui-icon-play"}});
+    $("#audioURL").width(30)
+    $("#audioURL").button().focus(function() {
+      $(this).button("widget").removeClass("ui-state-focus");
+    });
+
+    if (AudioStreamShow) {
+        $("#audioPage").show();
+        $("#audioURL").show();
+    } else {
+        $("#audioPage").hide();
+        $("#audioURL").hide();
+    }
+
 	// Load up our options page
 	optionsInitalize();
 
@@ -668,6 +689,14 @@ function selectPlaneByHex(hex) {
 	}
     refreshSelected();
     refreshTableInfo();
+}
+
+function audioPage(){
+    window.open(AudioStreamPageURL, '_audiostreampage');
+}
+
+function audioURL(){
+    window.open(AudioStreamURL, '_audiostreamurl');
 }
 
 function resetMap() {
