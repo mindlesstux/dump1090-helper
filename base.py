@@ -162,6 +162,7 @@ class Planes():
         else:
             return False
 
+    # TODO: Make this purge out planeicaos properly
     def reaper(self):
         logging.debug("Planes before reap: %s" % len(self.planeicaos))
         to_pop = []
@@ -170,19 +171,22 @@ class Planes():
             now = datetime.datetime.now()
             planedate = plane.lastupdate
             timedelta = now - planedate
-            if timedelta.total_seconds() > 300:
-            	plane.seen_stop = datetime.datetime.utcnow()
-            	if len(plane.trail) > 0:
-                    tmp_trl = PLN_TRAIL(plane=plane.icao, trail=plane.trail)
-                    tmp_trl.put()
-                    tmp_pln = PLN_LOG(icao=plane.icao, flightid=plane.flightid, seen_start=plane.seen_start, seen_stop=plane.seen_stop, trail=tmp_trl.key)
-                    tmp_pln.put()
-                    del tmp_trl
-                else:
-                    tmp_pln = PLN_LOG(icao=plane.icao, flightid=plane.flightid, seen_start=plane.seen_start, seen_stop=plane.seen_stop)
-                    tmp_pln.put()
+            if timedelta.total_seconds() > 90:
+                plane.seen_stop = datetime.datetime.utcnow()
+                try:
+                    if len(plane.trail) > 0:
+                        tmp_trl = PLN_TRAIL(plane=plane.icao, trail=plane.trail)
+                        tmp_trl.put()
+                        tmp_pln = PLN_LOG(icao=plane.icao, flightid=plane.flightid, seen_start=plane.seen_start, seen_stop=plane.seen_stop, trail=tmp_trl.key)
+                        tmp_pln.put()
+                        del tmp_trl
+                    else:
+                        tmp_pln = PLN_LOG(icao=plane.icao, flightid=plane.flightid, seen_start=plane.seen_start, seen_stop=plane.seen_stop)
+                        tmp_pln.put()
 
-                del tmp_pln
+                    del tmp_pln
+                except apiproxy_errors.OverQuotaError, message:
+                    logging.error(message)
 
                 to_pop.append(x)
 
@@ -206,37 +210,18 @@ class Planes():
 
     # Grab this plane somehow...
     def pullPlane(self, icao):
-        # Do we have this plane locally already?
-        if self.checkLocalPlane(icao):
-            localplane = self.planes[icao]
-        else:
-            localplane = None
-
         # Does the plane exist in memcache?
         if self.checkMemcachePlane(icao):
             remoteplane = memcache.get(icao)
+            return remoteplane
         else:
-            remoteplane = None
-
-        # If we have both local and remote
-        if localplane is not None and remoteplane is not None:
-            # If the local copy is newer, push it
-            if localplane.lastupdate > remoteplane.lastupdate:
-                self.pushPlane(icao, localplane)
+            # Do we have this plane locally already? (aka pushed out of memcache...)
+            if self.checkLocalPlane(icao):
+                localplane = self.planes[icao]
                 return localplane
             else:
-                return remoteplane
-        elif localplane is None and remoteplane is not None:
-            # Add localally and run with it
-            self.pushPlane(icao, remoteplane)
-            return remoteplane
-        elif localplane is not None and remoteplane is None:
-            # Should only happen if the key expires in memcache
-            self.pushPlane(icao, localplane)
-            return localplane
-        else:
-            plane = self.newPlane(icao)
-            return plane
+                plane = self.newPlane(icao)
+                return plane
 
     def processJSON(self, msgs):
         for msg in msgs:
