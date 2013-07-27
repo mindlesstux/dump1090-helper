@@ -282,52 +282,55 @@ class Planes():
         jsonstr.append(serverstr)
 
         planesstr = []
-        for x in self.planes:
-            plane = self.pullPlane(x)
-            planestr = {}
-            planestr['hex'] = plane.icao
-            planestr['squawk'] = plane.squawk
-            planestr['flight'] = plane.flightid
+        try:
+            for x in self.planes:
+                plane = self.pullPlane(x)
+                planestr = {}
+                planestr['hex'] = plane.icao
+                planestr['squawk'] = plane.squawk
+                planestr['flight'] = plane.flightid
 
-            if plane.latitude is not None and plane.longitude is not None:
-                planestr['validposition'] = 1
-                planestr['lat'] = plane.latitude
-                planestr['lon'] = plane.longitude
-            else:
-                planestr['validposition'] = 0
-                planestr['lat'] = ""
-                planestr['lon'] = ""
+                if plane.latitude is not None and plane.longitude is not None:
+                    planestr['validposition'] = 1
+                    planestr['lat'] = plane.latitude
+                    planestr['lon'] = plane.longitude
+                else:
+                    planestr['validposition'] = 0
+                    planestr['lat'] = ""
+                    planestr['lon'] = ""
 
-            if plane.altitude is not None:
-                planestr['validaltitude'] = 1
-                planestr['altitude'] = plane.altitude
-            else:
-                planestr['validaltitude'] = 0
-                planestr['altitude'] = ""
+                if plane.altitude is not None:
+                    planestr['validaltitude'] = 1
+                    planestr['altitude'] = plane.altitude
+                else:
+                    planestr['validaltitude'] = 0
+                    planestr['altitude'] = ""
 
-            if plane.groundspeed is not None:
-                planestr['speed'] = plane.groundspeed
-            else:
-                planestr['speed'] = ""
+                if plane.groundspeed is not None:
+                    planestr['speed'] = plane.groundspeed
+                else:
+                    planestr['speed'] = ""
 
-            if plane.track is not None:
-                planestr['validtrack'] = 1
-                planestr['track'] = plane.track
-            else:
-                planestr['validtrack'] = 0
-                planestr['track'] = ""
+                if plane.track is not None:
+                    planestr['validtrack'] = 1
+                    planestr['track'] = plane.track
+                else:
+                    planestr['validtrack'] = 0
+                    planestr['track'] = ""
 
-            planestr['signal'] = plane.signal
+                planestr['signal'] = plane.signal
 
-            now = datetime.datetime.now()
-            planedate = plane.lastupdate
-            timedelta = now - planedate
-            planestr['seen'] = "%s" % int(timedelta.total_seconds())
+                now = datetime.datetime.now()
+                planedate = plane.lastupdate
+                timedelta = now - planedate
+                planestr['seen'] = "%s" % int(timedelta.total_seconds())
 
-            planestr['messages'] = plane.msgcount
+                planestr['messages'] = plane.msgcount
 
 
-            planesstr.append(planestr)
+                planesstr.append(planestr)
+        except:
+            planestr = []
 
         jsonstr.append(planesstr)
 
