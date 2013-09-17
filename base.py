@@ -23,20 +23,6 @@ class WPT_RNAV_ROUTE(ndb.Model):
     name = ndb.StringProperty()
     sequence = ndb.PickleProperty()
 
-# Log the trails that the planes make once they are reaped off
-class PLN_TRAIL(ndb.Model):
-    time = ndb.DateTimeProperty(auto_now=True, auto_now_add=True)
-    plane = ndb.StringProperty()
-    trail = ndb.JsonProperty(compressed=True)
-
-class PLN_LOG(ndb.Model):
-    icao = ndb.StringProperty()
-    flightid = ndb.StringProperty()
-    seen_start = ndb.DateTimeProperty()
-    seen_stop = ndb.DateTimeProperty()
-    trail = ndb.KeyProperty(kind=PLN_TRAIL)
-
-
 # Handles a bit more than standard webapp2 server
 class BasicHandler(webapp2.RequestHandler):
     def __init__(self, request=None, response=None):
@@ -173,21 +159,6 @@ class Planes():
             timedelta = now - planedate
             if timedelta.total_seconds() > 90:
                 plane.seen_stop = datetime.datetime.utcnow()
-                try:
-                    if len(plane.trail) > 0:
-                        tmp_trl = PLN_TRAIL(plane=plane.icao, trail=plane.trail)
-                        tmp_trl.put()
-                        tmp_pln = PLN_LOG(icao=plane.icao, flightid=plane.flightid, seen_start=plane.seen_start, seen_stop=plane.seen_stop, trail=tmp_trl.key)
-                        tmp_pln.put()
-                        del tmp_trl
-                    else:
-                        tmp_pln = PLN_LOG(icao=plane.icao, flightid=plane.flightid, seen_start=plane.seen_start, seen_stop=plane.seen_stop)
-                        tmp_pln.put()
-
-                    del tmp_pln
-                except apiproxy_errors.OverQuotaError, message:
-                    logging.error(message)
-
                 to_pop.append(x)
 
         for x in to_pop:

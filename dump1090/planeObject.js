@@ -180,7 +180,7 @@ var planeObject = {
 
 			// Is the position valid?
 			if ((data.validposition == 1) && (this.reapable == false)) {
-				// Detech if the plane has moved
+				// Detect if the plane has moved
 				changeLat = false;
 				changeLon = false;
 				changeAlt = false;
@@ -266,16 +266,25 @@ var planeObject = {
 			if (this.line) {
 				var path = this.line.getPath();
 				path.push(new google.maps.LatLng(this.latitude, this.longitude));
+                var seg = new google.maps.Polyline({
+                    map: Map,
+                    strokeColor: "rgb("+
+                        Math.floor((1-(h-hMin)/Math.max((hMax-hMin), 100))*255) + ", " +
+                        Math.floor(h/40000*255) + ", " +
+                        Math.floor((h-hMin)/Math.max((hMax-hMin), 100)*255) + ")",
+                    strokeOpacity:0.5
+                    });
+                this.linedata.hMax = Math.max.apply(null, this.trackdata[2]);
+		   	    this.linedata.hMin = Math.min.apply(null, this.trackdata[2]);
 			} else {
 				console.log("Starting new line");
 				this.line = new google.maps.Polyline({
-					strokeColor: '#000000',
-					strokeOpacity: 1.0,
+					strokeOpacity: 0.8,
 					strokeWeight: 3,
 					map: GoogleMap,
-					path: this.trackline,
 					zIndex: 10
 				});
+                this.line.setPath(new google.maps.MVCArray());
 			}
 			return this.line;
 		},
