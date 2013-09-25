@@ -35,6 +35,7 @@ class BasicHandler(webapp2.RequestHandler):
         else:
             self.is_dev = False
             self.datacenter = os.environ['DATACENTER']
+            self.datacenter = fake
 
         self.server_version = os.environ['SERVER_SOFTWARE']
 
@@ -306,7 +307,6 @@ class Planes():
         jsonstr.append(planesstr)
 
         jsondump = json.dumps(jsonstr)
-        #logging.info(jsondump)
         return jsondump
 
 
