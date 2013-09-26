@@ -35,7 +35,6 @@ class BasicHandler(webapp2.RequestHandler):
         else:
             self.is_dev = False
             self.datacenter = os.environ['DATACENTER']
-            self.datacenter = fake
 
         self.server_version = os.environ['SERVER_SOFTWARE']
 
@@ -117,7 +116,7 @@ class Planes():
         # Our planes
         self.planes = {}
         self.planeicaos = []
-
+        
         self.datacenter = os.environ['DATACENTER']
         self.server_instance = os.environ['INSTANCE_ID']
         self.server_version = os.environ['SERVER_SOFTWARE']
@@ -202,7 +201,7 @@ class Planes():
             # Need to change this to last updated w/ GMT/UTC conversion
             if plane.msgcountJSON is not msg['messages']:
                 if bool(msg['validaltitude']) is True:
-                    plane.altitude = msg['altitude']
+                  plane.altitude = msg['altitude']
 
                 if bool(msg['validtrack']) is True:
                     plane.track = int(msg['track'])
