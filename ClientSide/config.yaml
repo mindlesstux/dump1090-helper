@@ -1,0 +1,6 @@
+host: 172.16.0.5
+port: 30003
+reap:
+  interval: 2
+  hide: 15
+  remove: 20
