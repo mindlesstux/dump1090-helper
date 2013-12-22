@@ -1,5 +1,5 @@
 application: dump1090-helper
-version: 2
+version: 3
 runtime: python27
 api_version: 1
 threadsafe: yes
@@ -33,12 +33,3 @@ builtins:
 
 inbound_services:
 - warmup
-
-skip_files:
-- ^(.*/)?#.*#
-- ^(.*/)?.*~
-- ^(.*/)?.*\.py[co]
-- ^(.*/)?.*/RCS/.*
-- ^(.*/)?\..*
-- ^(.*/)?.*\.fubar
-- ^(.*/)?.*/ClientSide/.*

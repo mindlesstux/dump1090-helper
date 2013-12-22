@@ -116,7 +116,7 @@ class Planes():
         # Our planes
         self.planes = {}
         self.planeicaos = []
-
+        
         self.datacenter = os.environ['DATACENTER']
         self.server_instance = os.environ['INSTANCE_ID']
         self.server_version = os.environ['SERVER_SOFTWARE']
@@ -201,7 +201,7 @@ class Planes():
             # Need to change this to last updated w/ GMT/UTC conversion
             if plane.msgcountJSON is not msg['messages']:
                 if bool(msg['validaltitude']) is True:
-                    plane.altitude = msg['altitude']
+                  plane.altitude = msg['altitude']
 
                 if bool(msg['validtrack']) is True:
                     plane.track = int(msg['track'])
@@ -306,7 +306,6 @@ class Planes():
         jsonstr.append(planesstr)
 
         jsondump = json.dumps(jsonstr)
-        #logging.info(jsondump)
         return jsondump
 
 

@@ -26,7 +26,6 @@ PlaneClass = Planes()
 class MainHandler(BasicHandler):
     def get(self):
         self.redirect('/dump1090/gmap.html')
-        self.response.write('// Hello world!')
 
 # Test to do XSS so we can provide JSON to our viewers/clients from an alt domain
 class TestSHandler(BasicHandler):
@@ -72,12 +71,15 @@ class MsgPushHandler(webapp2.RequestHandler):
 class TaskPlaneJSON(webapp2.RequestHandler):
     def post(self):
         x = str(self.request.get('messages'))
+  
         try:
             msgs = json.JSONDecoder().decode(json.loads(x))
             PlaneClass.processJSON(msgs)
+        except ValueError, e:
+            logging.error("ValueError: %s" % e)
+            logging.debug(json.loads(x))
         except:
             logging.error("Problem decoding/processing JSON")
-
 
 class CronPlaneReaper(webapp2.RequestHandler):
     def get(self):
