@@ -1,4 +1,1 @@
 cron:
-- description: Plane Reaper
-  url: /secure/cron/reaper
-  schedule: every 1 minutes

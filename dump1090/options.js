@@ -21,7 +21,15 @@ function optionsInitalize() {
 	});
 
 	$( "#tabs" ).tabs();
-	
+
+    // Misc Options,
+    $("#labelShow").buttonset();
+    if(LabelShow) {
+        $('#labelShowOn').prop('checked',true).button("refresh");
+    } else {
+        $('#labelShowOff').prop('checked',true).button("refresh");
+    }
+
 	// Antenna coverage
 	$("#antennaShow").buttonset();
 	$("#antennaCollect").buttonset();

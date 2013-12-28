@@ -52,3 +52,4 @@ skip_files:
 - ^(.*/)?\..*
 - ^(.*/)?.*\.fubar
 - ^(.*/)?.*/ClientSide/.*
+- ^(.*/)?.*/data/conversion/.*

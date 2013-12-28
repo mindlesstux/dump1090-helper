@@ -34,3 +34,11 @@ table#optionsTabs { width: 100%; font-size: small; font-family: monospace; backg
 
 .pointer { cursor: pointer; }
 
+.labels {
+     color: red;
+     background-color: white;
+     font-family: "Lucida Grande", "Arial", sans-serif;
+     font-size: 8px;
+     text-align: left;
+     white-space: nowrap;
+}
