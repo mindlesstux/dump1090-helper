@@ -492,7 +492,12 @@ function refreshTableInfo() {
 	html += '<td onclick="setASC_DESC(\'7\');sortTable(\'tableinfo\',\'7\');" ' +
 	    'align="right">Msgs</td>';
 	html += '<td onclick="setASC_DESC(\'8\');sortTable(\'tableinfo\',\'8\');" ' +
-	    'align="right">Seen</td></thead><tbody>';
+	    'align="right">Seen</td>';
+	if ( typeof regLookup == 'function' ) {
+		html += '<td align="center" colspan="3">Imgs</td>';
+		html += '<td align="right">Reg</td>';
+	}
+    html += '</thead><tbody>';
 	iPlanesTable = 0;
 	iPlanesTrackable = 0;
 	for (var tablep in Planes) {
@@ -573,6 +578,12 @@ function refreshTableInfo() {
     	    html += '<td align="right">' + avgSignal + '</td>';
 			html += '<td align="right">' + tableplane.messages + '</td>';
 			html += '<td align="right">' + tableplane.seen + '</td>';
+            if ( typeof regLookup == 'function' ) {
+                html += '<td align="right"><img src="' + remote_imgdir + 'SQBflag/' + tableplane.country_flag + '" alt="' + tableplane.country + '" /></td>';
+                html += '<td align="right"><img src="' + remote_imgdir + 'OperatorLogos/' + tableplane.operator + '.bmp" alt="' + tableplane.operator + '" /></td>';
+                html += '<td align="right"><img src="' + remote_imgdir + 'SilhouettesLogos/' + tableplane.type + '.bmp"  alt="' + tableplane.type + '" /></td>';
+                html += '<td align="right">' + tableplane.registration + '</td>';
+            }
 			html += '</tr>';
 		}
 	}

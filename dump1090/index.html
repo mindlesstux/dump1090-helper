@@ -1,1 +1,140 @@
-gmap.html
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="style.css" />
+		<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/redmond/jquery-ui.css" />
+		
+		<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false&libraries=geometry"></script>
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+		<script type="text/javascript" src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+		<script type="text/javascript" src="3rdparty/jquery.idTabs.min.js"></script>
+		<script type="text/javascript" src="3rdparty/xReader.full.js"></script> <!-- http://kincrew.github.io/xReader/ -->
+		<script type="text/javascript" src="3rdparty/FileSaver.js"></script>
+		<script type="text/javascript" src="3rdparty/markerwithlabel.js"></script> <!-- https://code.google.com/p/google-maps-utility-library-v3 -->
+		<script type="text/javascript" src="3rdparty/coolclock/excanvas.js"></script>
+		<script type="text/javascript" src="3rdparty/coolclock/coolclock.js"></script>
+		<script type="text/javascript" src="3rdparty/coolclock/moreskins.js"></script>
+		<script type="text/javascript" src="config.js"></script> <!-- Configuration of javascript -->
+		<script type="text/javascript" src="untrackedDeveloperSettings.js"></script> <!-- Developer override of config.js -->
+		<script type="text/javascript" src="planeObject.js"></script> <!-- Object about the plane -->
+		<script type="text/javascript" src="options.js"></script> <!-- WebGUI options -->
+		<script type="text/javascript" src="extension.js"></script> <!-- Easy hookin for addon? -->
+        <script type="text/javascript" src="http://adsb.mindlesstux.com/dump1090/registration.js"></script> <!-- 3rd Party extra info lookup
+			Alt Srcs:   http://dump1090-helper.appspot.com/dump1090/registration.js
+                        http://adsb.mindlesstux.com/dump1090/registration.js
+                        http://localhost:8080/dump1090/registration.js
+		-->
+        <script type="text/javascript" src="script.js"></script> <!-- The meat of the javascript -->
+
+		<!--
+			The repo where you can find this code is: https://github.com/bdavenport/dump1090
+			I give thanks to MalcomRobb for his fork that this is based off of: https://github.com/MalcolmRobb/dump1090
+			Then thanks to antirez for whom started the dump1090 project and MalcomRobb who forked antirez: https://github.com/antirez/dump1090
+
+			Other known supporters are:
+				terrible: https://github.com/terribl
+		-->
+
+	</head>
+	<body onload="initialize()">
+		<div id="dialog-modal" title="Basic modal dialog" style="display:none;">
+			<div id="tabs">
+				<ul>
+					<li><a href="#tabs-1">Basic Options</a></li>
+					<li><a href="#tabs-2">Proin dolor</a></li>
+					<li><a href="#tabs-3">Antenna Coverage</a></li>
+				</ul>
+				<div id="tabs-1">
+                    <table>
+                        <tr>
+                            <td>Show labels on map</td>
+                            <td>&nbsp;</td>
+                            <td><div id="labelShow">
+                                <input type="radio" id="labelShowOn" name="labelShow" onClick="LabelShow=true;">
+                                <label for="labelShowOn">On</label>
+                                <input type="radio" id="labelShowOff" name="labelShow" onClick="LabelShow=false;">
+                                <label for="labelShowOff">Off</label>
+                            </div></td>
+                        </tr>
+                    </table>
+                </div>
+				<div id="tabs-2">
+					<h2>Content heading 2</h2>
+					<p>Morbi tincidunt, dui sit amet facilisis feugiat, odio metus gravida ante, ut pharetra massa metus id nunc. Duis scelerisque molestie turpis. Sed fringilla, massa eget luctus malesuada, metus eros molestie lectus, ut tempus eros massa ut dolor. Aenean aliquet fringilla sem. Suspendisse sed ligula in ligula suscipit aliquam. Praesent in eros vestibulum mi adipiscing adipiscing. Morbi facilisis. Curabitur ornare consequat nunc. Aenean vel metus. Ut posuere viverra nulla. Aliquam erat volutpat. Pellentesque convallis. Maecenas feugiat, tellus pellentesque pretium posuere, felis lorem euismod felis, eu ornare leo nisi vel felis. Mauris consectetur tortor et purus.</p>
+				</div>
+				<div id="tabs-3">
+					<table>
+					    <tr>
+					        <td>Show coverage on map</td>
+					        <td>&nbsp;</td>
+					        <td><div id="antennaShow">
+					            <input type="radio" id="antennaShowOn" name="antennaShow"
+					                onClick="AntennaDataShow=true;drawAntennaData();">
+					            <label for="antennaShowOn">On</label>
+                                <input type="radio" id="antennaShowOff" name="antennaShow"
+					                onClick="AntennaDataShow=false;drawAntennaData();">
+                                <label for="antennaShowOff">Off</label>
+                            </div></td>
+                        </tr>
+					    <tr><td>Collect coverage data</td>
+					        <td>&nbsp;</td>
+					        <td><div id="antennaCollect">
+					            <input type="radio" id="antennaCollectOn" name="antennaCollect"
+					                onClick="AntennaDataCollect=true;">
+					            <label for="antennaCollectOn">On</label>
+                                <input type="radio" id="antennaCollectOff" name="antennaCollect"
+                                    onClick="AntennaDataCollect=false;">
+                                <label for="antennaCollectOff">Off</label>
+                            </div></td>
+					    </tr>
+					    <tr>
+					        <td>Coverage opacity</td>
+					        <td>&nbsp;</td>
+					        <td><div id="antennaShowOpacity"></div></td>
+					    </tr>
+					    <tr>
+					        <td>Download</td>
+					        <td>&nbsp;</td>
+					        <td>
+					            <button id="downloadBaseCoverage"
+					                onClick="downloadBaseCoverage();">antennaBaseCoverage.txt</button>
+					        </td>
+					    </tr>
+					</table>				    
+				</div>
+			</div>
+		</div>
+		<div id="map_container">
+			<div id="map_canvas"></div>
+		</div>
+		<div id="container_splitter"></div>
+		<div id="sidebar_container">
+			<div id="sidebar_canvas">
+				<div id="timestamps" style="align: center">
+					<table width="100%"><tr>
+						<td align="right" style="padding-right: 8px;">
+						    <span style="color:black;">Local&nbsp;Time</span><br>
+						    <span style="color:gray;">UTC&nbsp;Time</span>
+						</td>
+						<td style="padding-right: 80px;">
+							<canvas id="localclock" class="CoolClock:classicUTC:40"></canvas>
+						</td>
+						<td align="right"><div id="sudo_buttons">
+							<button id="resetMap" onclick="resetMap();">Reset&nbsp;Map</button><br>
+							<button id="optionsModal" onclick="optionsModal();">Settings</button>
+						</div></td>
+					</tr></table>
+				</div>
+				<div id="plane_detail"></div>
+				<div id="options"></div>
+				<div id="planes_table"></div>
+				<div id="plane_extension"></div>
+			</div>
+		</div>
+		<div id="SpecialSquawkWarning">
+		    <b>Squak 7x00 is reported and shown.</b><br>
+            This is most likely an error in reciving or decoding.<br>
+            Please do not call the local authorities, they already know about it if it is valid squak.
+		</div>
+		<div id="METAR"></div>
+	</body>
+</html>

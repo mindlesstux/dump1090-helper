@@ -37,13 +37,6 @@ builtins:
 - appstats: off
 - admin_redirect: on
 
-inbound_services:
-- warmup
-- xmpp_message
-- xmpp_presence
-- xmpp_subscribe
-- xmpp_error
-
 skip_files:
 - ^(.*/)?#.*#
 - ^(.*/)?.*~
@@ -52,4 +45,4 @@ skip_files:
 - ^(.*/)?\..*
 - ^(.*/)?.*\.fubar
 - ^(.*/)?.*/ClientSide/.*
-- ^(.*/)?.*/data/conversion/.*
+- ^(.*/)?.*/data/.*

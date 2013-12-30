@@ -48,3 +48,8 @@ AntennaDataOpacity  = 0.3;
 
 // -- Label Showing ---------------------------------------
 LabelShow   = false;
+
+// -- Extended Data Info ----------------------------------
+// These only apply if you are using the remote
+// registration.js script
+remote_imgdir = 'http://adsb.mindlesstux.com/static/';
