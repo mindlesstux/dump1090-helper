@@ -8,9 +8,6 @@
 // -- JSON-feed -------------------------------------------
 CONST_JSON = '/dump1090/data.json'; // Default '/dump1090/data.json'
 
-// -- Lookup registration/country/type/owner---------------
-BOOL_LOOKUP = true;
-
 // -- Output Settings -------------------------------------
 // Show metric values
 Metric = false; // true or false
@@ -48,6 +45,10 @@ AntennaDataOpacity  = 0.3;
 
 // -- Label Showing ---------------------------------------
 LabelShow   = false;
+
+
+// -- Lookup registration/country/type/owner---------------
+BOOL_LOOKUP = true;
 
 // -- Extended Data Info ----------------------------------
 // These only apply if you are using the remote
