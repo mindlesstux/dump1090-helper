@@ -8,7 +8,7 @@ import os
 
 from plane import Plane
 from google.appengine.api import memcache
-from datastore import AirCraft
+from datastore import Aircraft
 
 # Lets group the planes together
 class Planes():
@@ -32,10 +32,10 @@ class Planes():
     def newPlane(self, icao):
         plane = Plane()
         plane.icao = icao
-        query = AirCraft.query(AirCraft.icao24 == icao).fetch()
+        query = Aircraft.query(Aircraft.icao == icao).fetch()
         if (query == []):
-            tmp = AirCraft()
-            tmp.icao24 = icao
+            tmp = Aircraft()
+            tmp.icao = icao
             tmp.put()
             del tmp
             del query

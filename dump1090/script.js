@@ -55,8 +55,6 @@ function fetchData() {
 		                } //*/
                 iPlanesTotal = j;
 
-
-                
                 // Set SpecialSquawk-value
                 if (data[j].squawk == '7500' || data[j].squawk == '7600' || data[j].squawk == '7700') {
                     SpecialSquawk = true;
@@ -580,8 +578,8 @@ function refreshTableInfo() {
 			html += '<td align="right">' + tableplane.seen + '</td>';
             if ( typeof regLookup == 'function' ) {
                 html += '<td align="right"><img src="' + remote_imgdir + 'SQBflag/' + tableplane.country_flag + '" alt="' + tableplane.country + '" /></td>';
-                html += '<td align="right"><img src="' + remote_imgdir + 'OperatorLogos/' + tableplane.operator + '.bmp" alt="' + tableplane.operator + '" /></td>';
-                html += '<td align="right"><img src="' + remote_imgdir + 'SilhouettesLogos/' + tableplane.type + '.bmp"  alt="' + tableplane.type + '" /></td>';
+                html += '<td align="right"><img src="' + remote_imgdir + 'OperatorLogos/' + tableplane.operator + '.png" alt="' + tableplane.operator + '" /></td>';
+                html += '<td align="right"><img src="' + remote_imgdir + 'SilhouettesLogos/' + tableplane.type + '.png"  alt="' + tableplane.type + '" /></td>';
                 html += '<td align="right">' + tableplane.registration + '</td>';
             }
 			html += '</tr>';

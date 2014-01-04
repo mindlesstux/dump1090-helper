@@ -22,11 +22,20 @@ class WarmupHandler(webapp2.RequestHandler):
     def get(self):
         pass
 
+class TestHandler(BasicHandler):
+    def get(self, start=0, max=0):
+        self.tohtml['start'] = int(start)
+        self.tohtml['max'] = int(max)
+        self.render_template('secure/ImportAircraft.html')
+
+
 planes = Planes()
 
 app = webapp2.WSGIApplication([
                                   ("/_ah/warmup", WarmupHandler),
                                   ('/', MainHandler),
-                                  ('/secure/initalizeDS', "datastore.InitalizeDSHandler"),
+                                  ('/test/(.*)/(.*)/', TestHandler),
+                                  ('/secure/import/basestation/(.*)/(.*)/', 'datastore.ImportAircraft'),
+                                  ('/secure/importAircraft', "datastore.ImportAircraft"),
                                   ('/search/icao24/(.*).json', JSONDataHandler),
                               ], debug=True)

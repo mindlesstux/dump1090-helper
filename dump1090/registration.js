@@ -6,13 +6,13 @@ function regLookup(plane) {
 		trigger_lookup = true;
 	if (plane.country_short == null)
 		trigger_lookup = true;
-	if (plane.country_flag == null)
+	if (plane.country_flag == "NoFlag.bmp")
 		trigger_lookup = true;
-	if (plane.type == null)
+	if (plane.type == "@@@")
 		trigger_lookup = true;
-	if (plane.operator == null)
+	if (plane.operator == "@@@")
 		trigger_lookup = true;
-	if (plane.registration == null)
+	if (plane.registration == "NO-REG")
 		trigger_lookup = true;
 
 	if (trigger_lookup = true) {
@@ -25,15 +25,9 @@ function regLookup(plane) {
 			success: function(data) {
 				//Nothing to see here right now...
                 plane.lookedup = true;
-                if (data.country != "false") {
-                    plane.country = data.country;
-                    plane.country_flag = data.country_flag;
-                    plane.country_short = data.country_short;
-                } else {
-                    plane.country = "Not_Allocated"
-                    plane.country_flag = "Not_Allocated.bmp"
-                    plane.country_short = "XX"
-                }
+                plane.country = data.country;
+                plane.country_flag = data.country_flag;
+                plane.country_short = data.country_short;
                 plane.operator = data.operator;
                 plane.registration = data.registration;
                 plane.type = data.type;

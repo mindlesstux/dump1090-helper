@@ -1,7 +1,10 @@
 __author__ = 'bdavenport'
 
+from google.appengine.ext import db
 from google.appengine.ext import ndb
 from base import *
+
+import logging
 
 # RNAV WPTs
 class WPT_RNAV(ndb.Model):
@@ -24,26 +27,58 @@ class NATFIX(ndb.Model):
     state = ndb.StringProperty()
     type = ndb.StringProperty()
 
-class AirCraft(ndb.Model):
-    icao24 = ndb.StringProperty(indexed=True)
-    registration = ndb.StringProperty(default="NO-REG")
-    manufacture = ndb.StringProperty(default=" ")
-    typeCode = ndb.StringProperty(default="@@@", indexed=True)
-    model = ndb.StringProperty(default=" ")
-    operator = ndb.StringProperty(default="@@@")
-    date_update = ndb.DateTimeProperty(auto_now=True)
-    date_added = ndb.DateTimeProperty(auto_now_add=True)
-    flag_new = ndb.BooleanProperty(default=True)
+class Aircraft(ndb.Model):
+    mantma_id = ndb.IntegerProperty(default=-1, indexed=True)
 
-class InitalizeDSHandler(BasicHandler):
-    def get(self):
-        tmp = AirCraft()
-        tmp.icao24 = "FFDDCC"
-        tmp.registration = "TESTTEST"
-        tmp.manufacture = "MFG TEST"
-        tmp.typeCode = "B737"
-        tmp.model = "737-3H4"
-        tmp.operator = "TETS"
-        tmp.flag_new = False
-        tmp.put()
-        self.redirect('/dump1090/gmap.html')
+    date_added = ndb.DateTimeProperty(auto_now_add=True)
+    date_update = ndb.DateTimeProperty(auto_now=True)
+
+    icao = ndb.StringProperty(indexed=True)
+    icao_type = ndb.StringProperty(default="@@@")
+    registration = ndb.StringProperty(default="")
+    operator_flag = ndb.StringProperty(default="@@@")
+
+    flag_new = ndb.BooleanProperty(default=True, indexed=True)
+    flag_reviewed = ndb.BooleanProperty(default=False, indexed=False)
+
+
+class ImportAircraft(BasicHandler):
+    def get(self, start=1, max=0):
+        start = int(start)
+        max = int(max)
+        stop = start + 100
+        with open('basestation.csv', 'r') as csvfile:
+            if start is 1:
+                max = len(list(csvfile))
+            else:
+                if stop > int(max):
+                    stop = int(max)
+
+            logging.info('%s / %s' % (start, max))
+
+            lines = csvfile.readlines()[start:stop]
+
+            for row in lines:
+                split = row.split(',')
+                tmp = Aircraft()
+
+                tmp.mantma_id = int(split[0])
+                tmp.icao = split[3]
+                tmp.registration = split[5]
+                tmp.icao_type = split[6]
+                tmp.operator_flag = split[8]
+
+
+                tmp.put()
+
+                del tmp
+
+        stop += 1
+        if max > stop:
+            self.tohtml['stop'] = int(stop)
+            self.tohtml['max'] = int(max)
+            self.render_template('secure/ImportAircraft.html')
+            #self.response.write("%s/%s/" % (stop, max))
+            #self.redirect('/secure/import/basestation/%s/%s/' % (stop, max))
+        else:
+            self.redirect('http://www.mindlesstux.com')

@@ -44,9 +44,12 @@ var planeObject = {
 
 	// Extra plane info, that has to be looked up
 	country		: null,
-	type		: null,
+    country_short: null,
+    country_flag: "NoFlag.bmp",
+    type		: "@@@",
 	owner		: null,
-	registration	: null,
+    operator    : "@@@",
+	registration	: "NO-REG",
 	lookedup	: false,
 
 	// When was this last updated?

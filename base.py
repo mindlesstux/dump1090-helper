@@ -33,12 +33,12 @@ class BasicHandler(webapp2.RequestHandler):
             'code_version': self.code_version,
         }
 
-        @webapp2.cached_property
-        def jinja2(self):
-            return jinja2.get_jinja2(app=self.app)
+    @webapp2.cached_property
+    def jinja2(self):
+        return jinja2.get_jinja2(app=self.app)
 
-        def render_template(self, filename):
-            template_args = self.tohtml
-            self.response.write(self.jinja2.render_template(filename, **template_args))
+    def render_template(self, filename):
+        template_args = self.tohtml
+        self.response.write(self.jinja2.render_template(filename, **template_args))
 
 
