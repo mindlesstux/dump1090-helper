@@ -18,6 +18,7 @@ table#optionsTabs { width: 100%; font-size: small; font-family: monospace; backg
     border: 1px; border-color: #000000;}
 
 #tableinfo { font-size: x-small; font-family: monospace; }
+#table_of_planes { font-size: 8px; font-family: monospace; }
 #sudo_buttons { font-size: x-small; font-family: monospace; }
 
 .vPosition  { font-weight: bold; background-color: #f5fff5; }
@@ -25,7 +26,14 @@ table#optionsTabs { width: 100%; font-size: small; font-family: monospace; backg
 .squawk7600 { font-weight: bold; background-color: #00ffff; }
 .squawk7700 { font-weight: bold; background-color: #ffff00; }
 .selected   { background-color: #dddddd; }
-.plane_table_row { cursor: pointer; }
+tr.row > td {
+    padding: 0em 0em 0em 0em;
+    background-color: #D9EBF9;
+}
+
+.col-left { text-align: left; }
+.col-center { text-align: center; }
+.col-right { text-align: right;}
 
 #selectedinfotitle  { font-size: larger; }
 #selectedinfo       { font-size: small; }

@@ -31,7 +31,10 @@ function regLookup(plane) {
                 		plane.operator = data.operator;
                 		plane.registration = data.registration;
                 		plane.type = data.type;
+                        plane.is_military = data.is_military;
 			},
 		});
+		plane.lookedup = true;
 	}
 }
+

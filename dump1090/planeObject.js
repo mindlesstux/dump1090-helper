@@ -51,6 +51,7 @@ var planeObject = {
     operator    : "@@@",
 	registration	: "NO-REG",
 	lookedup	: false,
+    is_military ; false,
 
 	// When was this last updated?
 	updated		: null,
@@ -157,7 +158,6 @@ var planeObject = {
 		label += "FL" + this.funcGetFL().slice(0, 3) + " " + this.speed + "<br />";
 		return label
 	},
-
 
 	// Update our data
 	funcUpdateData	: function(data){

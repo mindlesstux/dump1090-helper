@@ -35,7 +35,6 @@ app = webapp2.WSGIApplication([
                                   ("/_ah/warmup", WarmupHandler),
                                   ('/', MainHandler),
                                   ('/test/(.*)/(.*)/', TestHandler),
-                                  ('/secure/import/basestation/(.*)/(.*)/', 'datastore.ImportAircraft'),
                                   ('/secure/importAircraft', "datastore.ImportAircraft"),
                                   ('/search/icao24/(.*).json', JSONDataHandler),
                               ], debug=True)

@@ -11,6 +11,11 @@ var MetarReset    = true;
 var AntennaData     = {};
 var AntennaDataPath = null;
 
+// Track all the plane data in a massive array for the html table...
+var data_array = [];
+var data_table = null;
+
+// These might go away...
 var iSortCol=-1;
 var bSortASC=true;
 var bDefaultSortASC=true;
@@ -259,7 +264,8 @@ function initialize() {
 	// Setup our timer to poll from the server.
 	window.setInterval(function() {
 		fetchData();
-		refreshTableInfo();
+		//refreshTableInfo();
+        updateTableOfPlanes();
 		refreshSelected();
 		reaper();
 		extendedPulse();
@@ -276,6 +282,42 @@ function initialize() {
             getMetar();
         }, 300000);
     }
+
+    data_table = $('#table_of_planes').dataTable( {
+        "aaData": data_array,
+        "aoColumns": [
+            { "sTitle": "Flag",             "sWidth": "50px",   "sClass": "col-center",     "bSortable": false, "mData": "flag" },
+            { "sTitle": "Registration",                         "sClass": "col-left",                           "mData": "registration" },
+            { "sTitle": "Operator Logo",                        "sClass": "col-center",     "bSortable": false, "mData": "operator_logo" },
+            { "sTitle": "Silhouette",                           "sClass": "col-center",     "bSortable": false, "mData": "silhouette" },
+            { "sTitle": "Flight",                               "sClass": "col-left",                           "mData": "flight" },
+
+            { "sTitle": "Altitude",                             "sClass": "col-right",                          "mData": "altitude"},
+            { "sTitle": "Speed",                                "sClass": "col-right",                          "mData": "speed" },
+            { "sTitle": "Track",                                "sClass": "col-right",                          "mData": "track" },
+            { "sTitle": "Latitude",                             "sClass": "col-center",                         "mData": "latitude",        "bVisible": false, },
+            { "sTitle": "Longitude",                            "sClass": "col-center",                         "mData": "longitude",       "bVisible": false, },
+
+            { "sTitle": "Squawk",                               "sClass": "col-center",                         "mData": "squawk" },
+            { "sTitle": "ICAO",                                 "sClass": "col-center",                         "mData": "icao" },
+            { "sTitle": "MSGs",                                 "sClass": "col-right",                          "mData": "messages",        "bVisible": false,},
+            { "sTitle": "Seen",                                 "sClass": "col-right",                          "mData": "seen",            "bVisible": false,},
+            { "sTitle": "Country",                              "sClass": "col-center",                         "mData": "country",         "bVisible": false,},
+            { "sTitle": "Country Short",                        "sClass": "col-center",                         "mData": "country_short",   "bVisible": false,},
+            { "sTitle": "Type",                                 "sClass": "col-center",                         "mData": "type",            "bVisible": false,},
+            { "sTitle": "Operator",                             "sClass": "col-center",                         "mData": "operator",        "bVisible": false,},
+        ],
+        "asStripeClasses": [ "row" ],
+        "bPaginate": false,
+        "bLengthChange": false,
+        "bFilter": false,
+        "bSort": true,
+        "bInfo": false,
+        "bAutoWidth": false,
+        "bStateSave": true,
+	    "bJQueryUI": true,
+        "sDom": 'Rt',
+    });
 }
 
 // This looks for planes to reap out of the master Planes variable
@@ -470,6 +512,48 @@ function normalizeTrack(track, valid){
 	return x
 }
 
+function updateTableOfPlanes() {
+    // Blank array
+    data_tmp = [];
+
+    // Loop through all the planes
+    for (var tablep in Planes) {
+
+        var tableplane = Planes[tablep];
+
+        tmp = {
+            "altitude": tableplane.altitude,
+            "speed": tableplane.speed,
+            "track": tableplane.track,
+            "latitude": tableplane.latitude,
+            "longitude": tableplane.longitude,
+            "flight": tableplane.flight,
+            "squawk": tableplane.squawk,
+            "icao": tableplane.icao,
+            "messages": tableplane.messages,
+            "seen": tableplane.seen,
+            "country": tableplane.country,
+            "country_short": tableplane.country_short,
+            "type": tableplane.type,
+            "operator": tableplane.operator,
+            "registration": tableplane.registration,
+
+            "flag": '<img src="' + remote_imgdir + 'SQBflag/' + tableplane.country_flag + '" title="' + tableplane.country + '"  alt="' + tableplane.country + '" />',
+            "operator_logo": '<img src="' + remote_imgdir + 'OperatorLogos/' + tableplane.operator + '.png" title="' + tableplane.operator + '"  alt="' + tableplane.operator + '" />',
+            "silhouette": '<img src="' + remote_imgdir + 'SilhouettesLogos/' + tableplane.type + '.png" title="' + tableplane.type + '"  alt="' + tableplane.type + '" />'
+        };
+
+        data_tmp.push(tmp);
+    };
+
+
+
+    data_array = data_tmp;
+
+    data_table.fnClearTable();
+    data_table.fnAddData(data_array)
+}
+
 // Refeshes the larger table of all the planes
 function refreshTableInfo() {
 	var html = '<table id="tableinfo" width="100%">';
@@ -491,11 +575,11 @@ function refreshTableInfo() {
 	    'align="right">Msgs</td>';
 	html += '<td onclick="setASC_DESC(\'8\');sortTable(\'tableinfo\',\'8\');" ' +
 	    'align="right">Seen</td>';
-	if ( typeof regLookup == 'function' ) {
-		html += '<td align="center" colspan="3">Imgs</td>';
+	    if ( typeof regLookup == 'function' ) {
+		html += '<td align="right" colspan="3">Imgs</td>';
 		html += '<td align="right">Reg</td>';
-	}
-    html += '</thead><tbody>';
+	    }
+	    html += '</thead><tbody>';	
 	iPlanesTable = 0;
 	iPlanesTrackable = 0;
 	for (var tablep in Planes) {
@@ -576,12 +660,12 @@ function refreshTableInfo() {
     	    html += '<td align="right">' + avgSignal + '</td>';
 			html += '<td align="right">' + tableplane.messages + '</td>';
 			html += '<td align="right">' + tableplane.seen + '</td>';
-            if ( typeof regLookup == 'function' ) {
-                html += '<td align="right"><img src="' + remote_imgdir + 'SQBflag/' + tableplane.country_flag + '" alt="' + tableplane.country + '" /></td>';
-                html += '<td align="right"><img src="' + remote_imgdir + 'OperatorLogos/' + tableplane.operator + '.png" alt="' + tableplane.operator + '" /></td>';
-                html += '<td align="right"><img src="' + remote_imgdir + 'SilhouettesLogos/' + tableplane.type + '.png"  alt="' + tableplane.type + '" /></td>';
-                html += '<td align="right">' + tableplane.registration + '</td>';
-            }
+			    if ( typeof regLookup == 'function' ) {
+				html += '<td align="right"><img src="' + remote_imgdir + 'SQBflag/' + tableplane.country_flag + '" title="' + tableplane.country + '"  alt="' + tableplane.country + '" /></td>';
+				html += '<td align="right"><img src="' + remote_imgdir + 'OperatorLogos/' + tableplane.operator + '.png" title="' + tableplane.operator + '"  alt="' + tableplane.operator + '" /></td>';
+				html += '<td align="right"><img src="' + remote_imgdir + 'SilhouettesLogos/' + tableplane.type + '.png" title="' + tableplane.type + '"  alt="' + tableplane.type + '" /></td>';
+				html += '<td align="left">' + tableplane.registration + '</td>';
+			    }
 			html += '</tr>';
 		}
 	}
@@ -596,13 +680,14 @@ function refreshTableInfo() {
         $('#SpecialSquawkWarning').css('display', 'none');
     }
 
-	sortTable("tableinfo");
+	//sortTable("tableinfo");
 }
 
 function onClickPlanes_table (hex) {
     if (hex && hex != '' && hex != "ICAO") {
 		selectPlaneByHex(hex);
-		refreshTableInfo();
+		//refreshTableInfo();
+        updateTableOfPlanes();
 		refreshSelected();
 	}
 }
@@ -702,7 +787,8 @@ function selectPlaneByHex(hex) {
 		SelectedPlane = null;
 	}
     refreshSelected();
-    refreshTableInfo();
+    //refreshTableInfo();
+    updateTableOfPlanes()
 }
 
 function resetMap() {
@@ -728,7 +814,8 @@ function resetMap() {
 	MetarReset = true;
 
 	refreshSelected();
-	refreshTableInfo();
+	//refreshTableInfo();
+    updateTableOfPlanes();
 	getMetar();
 }
 

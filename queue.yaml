@@ -1,6 +1,0 @@
-queue:
-- name: icaoPull
-  rate: 45/h
-  bucket_size: 100
-  retry_parameters:
-    task_age_limit: 1d
