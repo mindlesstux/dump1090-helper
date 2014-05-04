@@ -1,26 +1,4 @@
-var listKMLType = ['Approch', 'Departure', 'Transit', 'Custom1', 'Custom2'];
-var listKMLs = localStorage['listKMLs'] || [];
-
 function optionsInitalize() {
-	// Write your initalization here
-	// Gets called just before the 1-sec function call loop is setup
-	$( "#dialog-modal" ).dialog({
-		height: 360,
-		width: 600,
-		modal: true,
-		autoOpen: false,
-		closeOnEscape: false,
-		title: "Settings",
-		buttons: [ 
-			{ 
-				text: "Ok", click: function() { 
-					$( this ).dialog( "close" ); 
-				} 
-			}
-		]
-	});
-
-	$( "#tabs" ).tabs();
 
     // Misc Options,
     $("#labelShow").buttonset();
@@ -55,13 +33,38 @@ function optionsInitalize() {
 	} else {
 	    $('#antennaCollectOff').prop('checked',true).button("refresh");
 	}
-}
 
-function optionsModal() {
-	$( "#dialog-modal" ).dialog( "open");
+    $(function() {
+        $( "#slider-range" ).slider({
+            range: true,
+            min: 0,
+            max: 99000,
+            step: 1000,
+            values: [ markerFLFilter[0], markerFLFilter[1] ],
+            slide: function( event, ui ) {
+                $( "#amount" ).val( "FL" + zeroPad(ui.values[0], 5).slice(0, 3) + " - FL" + zeroPad(ui.values[1], 5).slice(0, 3) );
+                markerFLFilter[0] = ui.values[0];
+                markerFLFilter[1] = ui.values[1];
+                localStorage['markerFLFilter'] = JSON.stringify(markerFLFilter);
+            }
+        });
+        $( "#amount" ).val( "FL" + zeroPad($( "#slider-range" ).slider( "values", 0 ), 5).slice(0, 3) + " - FL" + zeroPad($( "#slider-range" ).slider( "values", 1) , 5).slice(0, 3) );
+    });
+
 }
 
 function downloadBaseCoverage() {
     var blob = new Blob([JSON.stringify(AntennaData)], {type: "text/plain;charset=utf-8"});
     saveAs(blob, "antennaBaseCoverage.txt");
+}
+
+function zeroPad(num, numZeros) {
+    var n = Math.abs(num);
+    var zeros = Math.max(0, numZeros - Math.floor(n).toString().length );
+    var zeroString = Math.pow(10,zeros).toString().substr(1);
+    if( num < 0 ) {
+        zeroString = '-' + zeroString;
+    }
+
+    return zeroString+n;
 }

@@ -2,6 +2,10 @@ __author__ = 'bdavenport'
 
 from base import *
 from planes import Planes
+from google.appengine.api import urlfetch
+from google.appengine.api import memcache
+
+import logging
 
 # Need to do something nice here so people know what this is, or just make it blank
 class MainHandler(BasicHandler):
@@ -28,6 +32,31 @@ class TestHandler(BasicHandler):
         self.tohtml['max'] = int(max)
         self.render_template('secure/ImportAircraft.html')
 
+class DynamicData(BasicHandler):
+    def get(self, source):
+        # This is a hack till there is a backend to update
+        DataLocations = {}
+        DataLocations["kclt"]   = "http://chronos.rpi.mindlesstux.com/dump1090/data.json"
+        DataLocations["rtlsdr"] = "http://adsb.rtlsdr.org/data.json"
+        DataLocations["eftu"]   = "http://map.ideat.eu:2095/data"
+
+        if source in DataLocations:
+            memKey = "source-%s" % source
+            x = memcache.get(key=memKey)
+            if x is None:
+                result = urlfetch.fetch(DataLocations[source])
+                if result.status_code == 200:
+                    memcache.set(key=memKey, time=6, value=result.content)
+                    self.response.write(str(result.content))
+                else:
+                    logging.warn(result.status_code)
+                    self.error(502)
+            else:
+                self.response.write(str(x))
+        else:
+            self.error(404)
+
+
 
 planes = Planes()
 
@@ -36,5 +65,6 @@ app = webapp2.WSGIApplication([
                                   ('/', MainHandler),
                                   ('/test/(.*)/(.*)/', TestHandler),
                                   ('/secure/importAircraft', "datastore.ImportAircraft"),
+                                  ('/dynamic/data/(.*).json', DynamicData),
                                   ('/search/icao24/(.*).json', JSONDataHandler),
                               ], debug=True)

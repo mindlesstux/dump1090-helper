@@ -16,22 +16,25 @@ function regLookup(plane) {
 		trigger_lookup = true;
 
 	if (trigger_lookup == true) {
-		//url_string = "http://dump1090-helper.appspot.com/search/icao24/" + plane.icao.toUpperCase() + ".json"
+		//url_string = "http://testing-1.dump1090-helper.appspot.com/search/icao24/" + plane.icao.toUpperCase() + ".json"
 		url_string = "http://adsb.mindlesstux.com/search/icao24/" + plane.icao.toUpperCase() + ".json"
 		//url_string = "http://localhost:8080/search/icao24/" + plane.icao.toUpperCase() + ".json"
 		$.ajax({
 			url: url_string,
 			dataType: ajaxDataType,
 			success: function(data) {
-				//Nothing to see here right now...
-                		plane.lookedup = true;
-                		plane.country = data.country;
-                		plane.country_flag = data.country_flag;
-                		plane.country_short = data.country_short;
-                		plane.operator = data.operator;
-                		plane.registration = data.registration;
-                		plane.type = data.type;
-                        plane.is_military = data.is_military;
+                plane.lookedup = true;
+                plane.country = data.country;
+                plane.country_flag = data.country_flag;
+                plane.country_short = data.country_short;
+                plane.operator = data.operator;
+                plane.registration = data.registration;
+                if (data.type != "") {
+                    plane.type = data.type;
+                }
+                plane.serialNo = data.serialNo;
+                plane.manufacturer = data.manufacturer;
+                plane.mantama_id = data.mantama_id;
 			},
 		});
 		plane.lookedup = true;

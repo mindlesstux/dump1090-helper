@@ -6,7 +6,12 @@
 // --------------------------------------------------------
 
 // -- JSON-feed -------------------------------------------
-CONST_JSON = '/dump1090/data.json'; // Default '/dump1090/data.json'
+// Default 'Mine', '/dump1090/data.json'
+CONST_JSON = [
+    ['KCLT',   '/dynamic/data/kclt.json'],
+    ['RTLSDR', '/dynamic/data/rtlsdr.json'],
+    ['EFTU',   '/dynamic/data/eftu.json']
+];
 
 // -- Output Settings -------------------------------------
 // Show metric values
@@ -16,6 +21,7 @@ Metric = false; // true or false
 // The Latitude and Longitude in decimal format
 CONST_CENTERLAT = 35.21712;
 CONST_CENTERLON = -80.94384;
+
 // The google maps zoom level, 0 - 16, lower is further out
 CONST_ZOOMLVL   = 9;
 
@@ -39,8 +45,11 @@ SiteCirclesDistances = new Array(5,10,30);
 MetarIcaoCode = "KCLT";
 
 // -- Antenna Data Collection -----------------------------
-AntennaDataCollect  = true;
-AntennaDataShow     = true;
+AntennaDataCollect  = false;
+AntennaDataShow     = false;
 AntennaDataOpacity  = 0.3;
 
 LabelShow = true;
+
+// -- Put debuging lines into console ---------------------
+BOOL_DEBUG = true;

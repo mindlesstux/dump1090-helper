@@ -51,7 +51,7 @@ class Aircraft(ndb.Model):
 	manufacturer = ndb.StringProperty(default="")
 
 
-
+'''
 class ImportAircraft(BasicHandler):
 	def get(self, start=1, max=0):
 		start = int(start)
@@ -92,3 +92,4 @@ class ImportAircraft(BasicHandler):
 			#self.redirect('/secure/import/basestation/%s/%s/' % (stop, max))
 		else:
 			self.redirect('http://www.mindlesstux.com')
+'''

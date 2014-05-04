@@ -6,7 +6,9 @@
 // --------------------------------------------------------
 
 // -- JSON-feed -------------------------------------------
-CONST_JSON = '/dump1090/data.json'; // Default '/dump1090/data.json'
+CONST_JSON = [
+    ['Mine', '/dump1090/data.json'],
+];
 
 // -- Output Settings -------------------------------------
 // Show metric values
@@ -54,3 +56,6 @@ BOOL_LOOKUP = true;
 // These only apply if you are using the remote
 // registration.js script
 remote_imgdir = 'http://adsb.mindlesstux.com/static/';
+
+// -- Put debuging lines into console ---------------------
+BOOL_DEBUG = false;

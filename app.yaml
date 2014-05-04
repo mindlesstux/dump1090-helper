@@ -1,5 +1,5 @@
 application: dump1090-helper
-version: development-1
+version: production-2
 runtime: python27
 api_version: 1
 threadsafe: yes

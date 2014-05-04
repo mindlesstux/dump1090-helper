@@ -37,7 +37,7 @@ def UpdateSchema(start=1, linemax=0):
 	stop = start + BATCH_SIZE
 
 	# Open the basestation file
-	with open('basestation.csv', 'r') as csvfile:
+	with open('data/basestation.csv', 'r') as csvfile:
 		# If start is 1, set max to total lines in the file
 		if start is 1:
 			linemax = len(list(csvfile))

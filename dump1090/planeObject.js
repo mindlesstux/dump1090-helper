@@ -13,6 +13,7 @@ var planeObject = {
 	oldlat		: null,
 	oldlon		: null,
 	oldalt		: null,
+    oldfltlvl   : null,
 
 	// Basic location information
 	altitude	: null,
@@ -43,35 +44,45 @@ var planeObject = {
 	trackline	: new Array(),
 
 	// Extra plane info, that has to be looked up
-	country		: null,
-    country_short: null,
-    country_flag: "NoFlag.bmp",
+    country		: null,
+    country_short	: null,
+    country_flag	: "NoFlag.png",
     type		: "@@@",
-	owner		: null,
+    owner		: null,
     operator    : "@@@",
-	registration	: "NO-REG",
-	lookedup	: false,
-    is_military ; false,
+    registration	: "NO-REG",
+    lookedup	: false,
 
-	// When was this last updated?
-	updated		: null,
-	reapable	: false,
+    // Extra plane info, that has to be computed
+    specialStyle: "",
+
+    // 0 = antriez
+    // 1 = Malcomb
+    // 2 = bdavenport
+    jsonDataVer : 0,
+
+    // When was this last updated?
+    updated		: null,
+    source      : null,
+    reapable	: false,
 
 	// Appends data to the running track so we can get a visual tail on the plane
 	// Only useful for a long running browser session.
 	funcAddToTrack	: function(){
 		// TODO: Write this function out
-		this.trackdata.push([this.latitude, this.longitude, this.altitude, this.track, this.speed]);
+		this.trackdata.push([Number(new Date()), this.latitude, this.longitude, this.altitude, this.track, this.speed]);
 		this.trackline.push(new google.maps.LatLng(this.latitude, this.longitude));
 	},
 
 	// This is to remove the line from the screen if we deselect the plane
 	funcClearLine	: function() {
-	console.log("Clearing line for: " + this.icao);
-	if (this.line) {
-		this.line.setMap(null);
-		this.line = null;
-	}
+        if (BOOL_DEBUG) {
+            console.log("Clearing line for: " + this.icao);
+        }
+        if (this.line) {
+            this.line.setMap(null);
+            this.line = null;
+        }
 	},
 
 	// Should create an icon for us to use on the map...
@@ -159,30 +170,77 @@ var planeObject = {
 		return label
 	},
 
+    funcUpdateStyle : function() {
+        // Set any special row style information
+        this.specialStyle = "";
+
+        // Is this the plane we selected?
+        if (this.icao == SelectedPlane) {
+            this.specialStyle += " selected";
+        }
+        // Lets hope we never see this... Aircraft Hijacking
+        if (this.squawk == 7500) {
+            this.specialStyle += " squawk7500";
+            SpecialSquawk = true;
+        }
+        // Radio Failure
+        if (this.squawk == 7600) {
+            this.specialStyle += " squawk7600";
+            SpecialSquawk = true;
+        }
+        // Emergency
+        if (this.squawk == 7700) {
+            this.specialStyle += " squawk7700";
+            SpecialSquawk = true;
+        }
+
+        // If the plane has a vaild lat/long, count it among the trackable.
+        if (this.vPosition == true) {
+            this.specialStyle += " vPosition";
+        }
+    },
+
 	// Update our data
-	funcUpdateData	: function(data){
+	funcUpdateData	: function(data, source){
 		// So we can find out if we moved
 		var oldlat 	= this.latitude;
 		var oldlon	= this.longitude;
 		var oldalt	= this.altitude;
+        var oldfltlvl = this.funcGetFL().slice(0, 3);
 
-		// Update all of our data
-		this.updated	= new Date().getTime();
-		this.altitude	= data.altitude;
-		this.speed	    = data.speed;
-		this.track	    = data.track;
-		this.latitude	= data.lat;
-		this.longitude	= data.lon;
-		this.flight	    = data.flight;
-		this.squawk	    = data.squawk;
+		// Update all of our data (antreriz dump1090)
 		this.icao	    = data.hex;
-		this.messages	= data.messages;
-		this.seen	    = data.seen;
-		this.signal     = data.signal;
-		this.vTrack     = (parseInt(data.validtrack) ? true : false);
-		this.vPosition  = (parseInt(data.validposition) ? true : false);
-		this.vAltitude  = (parseInt(data.validaltitude) ? true : false);
+        this.flight	    = data.flight;
+        this.altitude	= data.altitude;
+        this.track	    = data.track;
+        this.speed	    = data.speed;
+        this.latitude	= data.lat;
+        this.longitude	= data.lon;
 
+        // Add a timestamp to when we pushed an update
+		this.updated	= new Date().getTime();
+        this.source     = source;
+
+        if ((this.jsonDataVer != 0) || (typeof(data.squawk) != "undefined")) {
+            this.squawk	    = data.squawk;
+            this.messages	= data.messages;
+            this.seen	    = data.seen;
+            this.signal     = data.signal;
+            this.vTrack     = (parseInt(data.validtrack) ? true : false);
+            this.vPosition  = (parseInt(data.validposition) ? true : false);
+            this.vAltitude  = (parseInt(data.validaltitude) ? true : false);
+            this.jsonDataVer = 1;
+        } else {
+            // We can assume this is a 0 or no squawk, so all planes are valid...
+            this.vTrack     = true;
+            this.vPosition  = true;
+            this.vAltitude  = true;
+        }
+
+        this.funcReaperCheck();
+
+        // If we have lookup set to true, and the function is registered
+        // Attempt to get more information about the aircraft
 		if (BOOL_LOOKUP == true && this.lookedup == false) {
 			// Extra plane info, if we loaded the remote plane lookup.
             if ( typeof regLookup == 'function' ) {
@@ -190,36 +248,8 @@ var planeObject = {
             }
 		}
 
-		// If no packet in over 58 seconds, consider the plane reapable
-		// This way we can hold it, but not show it just in case the plane comes back
-		if (this.seen > 58) {
-			this.reapable = true;
-			if (this.marker) {
-				this.marker.setMap(null);
-				this.marker = null;
-			}
-			if (this.line) {
-				this.line.setMap(null);
-				this.line = null;
-			}
-			if (SelectedPlane == this.icao) {
-				if (this.is_selected) {
-					this.is_selected = false;
-				}
-				SelectedPlane = null;
-			}
-		} else {
-			if (this.reapable == true) {
-				if (SelectedPlane == this.icao) {
-					selectPlaneByHex(this.icao);
-				}
-				console.log(this.icao + ' has come back into range before the reaper!');
-			}
-			this.reapable = false;
-		}
-
 		// Is the position valid?
-		if ((data.validposition == 1) && (this.reapable == false)) {
+		if (((data.validposition == 1) && (this.reapable == false)) || (this.jsonDataVer == 0)) {
 			// Detech if the plane has moved
 			changeLat = false;
 			changeLon = false;
@@ -232,6 +262,7 @@ var planeObject = {
 			// Right now we only care about lat/long, if alt is updated only, oh well
 			if ((changeLat == true) || (changeLon == true)) {
 				this.funcAddToTrack();
+
 				if (this.is_selected) {
 					this.line = this.funcUpdateLines();
 				}
@@ -266,7 +297,47 @@ var planeObject = {
 			this.marker = this.funcUpdateMarker();
 			PlanesOnMap++;
 		}
+
+        this.funcUpdateStyle();
 	},
+
+    funcReaperCheck: function() {
+        // This is a bit of a cheat, to generate a seen entry...
+        if (this.jsonDataVer == 0) {
+            var x = new Date().getTime();
+            this.seen = Math.round((x - this.updated)/100);
+        }
+
+        // If no packet in over 58 seconds, consider the plane reapable
+        // This way we can hold it, but not show it just in case the plane comes back
+        if (this.seen >= 59) {
+            this.reapable = true;
+            if (this.marker) {
+                this.marker.setMap(null);
+                this.marker = null;
+            }
+            if (this.line) {
+                this.line.setMap(null);
+                this.line = null;
+            }
+            if (SelectedPlane == this.icao) {
+                if (this.is_selected) {
+                    this.is_selected = false;
+                }
+                SelectedPlane = null;
+            }
+        } else {
+            if (this.reapable == true) {
+                if (SelectedPlane == this.icao) {
+                    selectPlaneByHex(this.icao);
+                }
+                if (BOOL_DEBUG) {
+                    console.log(this.icao + ' has come back into range before the reaper!');
+                }
+            }
+            this.reapable = false;
+        }
+    },
 
 	// Update our marker on the map
 	funcUpdateMarker: function() {
@@ -274,9 +345,15 @@ var planeObject = {
 			this.marker.setPosition(new google.maps.LatLng(this.latitude, this.longitude));
 			this.marker.setIcon(this.funcGetIcon());
 			this.marker.set('labelContent', this.funcUpdateLabel());
+            this.marker.set('labelClass', "labels");
 			this.marker.set('labelVisible', LabelShow)
+            try {
+                this.marker.label.setStyles();
+                this.marker.label.draw();
+            } catch (e) {
+                console.log(e);
+            }
 		} else {
-
 			this.marker = new MarkerWithLabel({
 				position: new google.maps.LatLng(this.latitude, this.longitude),
 				map: GoogleMap,
@@ -296,6 +373,14 @@ var planeObject = {
 			google.maps.event.addListener(this.marker, 'click', this.funcSelectPlane);
 		}
 
+        if ((markerFLFilter[0] < this.altitude) && (this.altitude < markerFLFilter[1])) {
+            this.marker.setVisible(true);
+            this.marker.set('labelVisible', LabelShow);
+        } else {
+            this.marker.setVisible(false);
+            this.marker.set('labelVisible', false);
+        }
+
 		// Setting the marker title
 		if (this.flight.length == 0) {
 			this.marker.setTitle(this.hex);
@@ -313,7 +398,9 @@ var planeObject = {
 			var path = this.line.getPath();
 			path.push(new google.maps.LatLng(this.latitude, this.longitude));
 		} else {
-			console.log("Starting new line");
+            if (BOOL_DEBUG) {
+                console.log("Starting new line");
+            }
 			this.line = new google.maps.Polyline({
 				strokeColor: '#000000',
 				strokeOpacity: 1.0,
